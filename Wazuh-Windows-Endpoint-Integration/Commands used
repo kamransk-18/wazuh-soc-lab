@@ -1,0 +1,168 @@
+# Day-1 Commands — Wazuh Windows Endpoint Integration
+
+## 01. Verify Wazuh Agent Service
+
+Run on the Windows endpoint as Administrator:
+
+```powershell
+Get-Service WazuhSvc
+```
+
+Purpose: Verify that the Wazuh agent service is installed and running.
+
+---
+
+## 02. Verify Wazuh Agent Service Details
+
+```powershell
+Get-Service WazuhSvc | Format-List *
+```
+
+Purpose: Verify Wazuh agent service configuration and status.
+
+---
+
+## 03. Test Windows Endpoint to Wazuh Manager Connectivity
+
+```powershell
+Test-NetConnection 192.168.23.133 -Port 1514
+```
+
+Expected:
+
+```text
+TcpTestSucceeded : True
+```
+
+Purpose: Verify connectivity between the Windows endpoint and Wazuh Manager.
+
+---
+
+## 04. Verify Domain Secure Channel
+
+```powershell
+Test-ComputerSecureChannel -Verbose
+```
+
+Expected:
+
+```text
+True
+```
+
+Purpose: Verify the secure channel between the Windows endpoint and the
+Kamran.local domain.
+
+---
+
+## 05. Generate a Windows Test Event
+
+```powershell
+Write-EventLog -LogName Application -Source "WazuhTest" -EventId 1001 -EntryType Information -Message "Day-1 Wazuh telemetry test from KAMRAN-PC"
+```
+
+Purpose: Generate a controlled Windows Application event for Wazuh telemetry testing.
+
+---
+
+## 06. Verify the Windows Test Event
+
+```powershell
+Get-WinEvent -LogName Application -MaxEvents 20 |
+Where-Object {$_.ProviderName -eq "WazuhTest"}
+```
+
+Or:
+
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName='Application'
+    Id=1001
+} -MaxEvents 10
+```
+
+Purpose: Confirm that the test event was successfully created on Windows.
+
+---
+
+## 07. Verify Wazuh Archive Collection
+
+Run on the Wazuh Manager:
+
+```bash
+sudo grep -A5 -B2 "archives:" /etc/filebeat/filebeat.yml
+```
+
+Check the archive:
+
+```bash
+sudo ls -lh /var/ossec/logs/archives/archives.json
+```
+
+Search for the test event:
+
+```bash
+sudo grep -n "Day-1 Wazuh telemetry test from KAMRAN-PC" /var/ossec/logs/archives/archives.json
+```
+
+Or search by Event ID:
+
+```bash
+sudo grep -n '"eventID":"1001"' /var/ossec/logs/archives/archives.json
+```
+
+Purpose: Verify that Wazuh archived the Windows telemetry.
+
+---
+
+## 08. Verify Event in Wazuh Discover
+
+Open Wazuh/OpenSearch Discover.
+
+Index:
+
+```text
+wazuh-archives-*
+```
+
+Search:
+
+```text
+"Day-1 Wazuh telemetry test from KAMRAN-PC"
+```
+
+Additional searches:
+
+```text
+agent.name:"KamranAgent"
+```
+
+```text
+agent.id:"001"
+```
+
+Purpose: Verify that the Windows event is searchable in Wazuh/OpenSearch.
+
+---
+
+## 09. Verify Filebeat Output
+
+Run on the Wazuh Manager:
+
+```bash
+sudo filebeat test output
+```
+
+Verify Filebeat service:
+
+```bash
+sudo systemctl status filebeat --no-pager
+```
+
+Verify archive configuration:
+
+```bash
+sudo grep -A5 -B2 "archives:" /etc/filebeat/filebeat.yml
+```
+
+Purpose: Verify Filebeat connectivity to the OpenSearch/Elasticsearch-compatible endpoint and confirm that the archive configuration is enabled.
