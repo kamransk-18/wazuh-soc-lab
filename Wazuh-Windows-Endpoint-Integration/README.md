@@ -48,7 +48,7 @@ Integrate a Windows endpoint with Wazuh and verify that Windows telemetry is suc
 
 ### 5. Wazuh Agent Log
 
-![Wazuh Agent Log](./<img width="570" height="119" alt="05-wazuh-agent-log-collection" src="https://github.com/user-attachments/assets/39d95c77-4288-4974-bce1-5441f774f889" />
+(./<img width="570" height="119" alt="05-wazuh-agent-log-collection" src="https://github.com/user-attachments/assets/39d95c77-4288-4974-bce1-5441f774f889" />
 )
 
 ### 6. Test Event Created
